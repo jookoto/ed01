@@ -1,0 +1,140 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_LIVROS 100
+#define MAX_NOME 100
+
+typedef struct {
+    char nome[MAX_NOME];
+    char autor[MAX_NOME];
+    int paginas;
+} Livro;
+
+typedef struct {
+    Livro livros[MAX_LIVROS];
+    int topo; // Índice do topo da pilha
+} Pilha;
+
+// Função para inicializar a pilha
+void inicializaPilha(Pilha *p) {
+    p->topo = -1; // Pilha vazia
+}
+
+// Função para verificar se a pilha está vazia
+int pilhaVazia(Pilha *p) {
+    return p->topo == -1;
+}
+
+// Função para verificar se a pilha está cheia
+int pilhaCheia(Pilha *p) {
+    return p->topo == MAX_LIVROS - 1;
+}
+
+// Função para empilhar um livro
+void empilhar(Pilha *p, const char *nome, const char *autor, int paginas) {
+    if (!pilhaCheia(p)) {
+        p->topo++;
+        strcpy(p->livros[p->topo].nome, nome);
+        strcpy(p->livros[p->topo].autor, autor);
+        p->livros[p->topo].paginas = paginas;
+        printf("Livro '%s' adicionado com sucesso!\n", nome);
+    } else {
+        printf("Pilha cheia! Não é possível adicionar mais livros.\n");
+    }
+}
+
+// Função para desempilhar um livro
+Livro desempilhar(Pilha *p) {
+    if (!pilhaVazia(p)) {
+        return p->livros[p->topo--];
+    } else {
+        printf("Pilha vazia! Não há livros para remover.\n");
+        Livro livroVazio = {"", "", 0}; // Retorna um livro vazio
+        return livroVazio;
+    }
+}
+
+// Função para buscar um livro pelo nome ou autor
+void buscarLivro(Pilha *p, const char *termo) {
+    int encontrado = 0;
+    for (int i = 0; i <= p->topo; i++) {
+        if (strstr(p->livros[i].nome, termo) != NULL || strstr(p->livros[i].autor, termo) != NULL) {
+            printf("Livro encontrado: '%s' de %s, %d páginas\n", p->livros[i].nome, p->livros[i].autor, p->livros[i].paginas);
+            encontrado = 1;
+        }
+    }
+    if (!encontrado) {
+        printf("Nenhum livro encontrado com o termo '%s'.\n", termo);
+    }
+}
+
+// Função para listar todos os livros
+void listarLivros(Pilha *p) {
+    if (pilhaVazia(p)) {
+        printf("Nenhum livro cadastrado na pilha.\n");
+        return;
+    }
+    printf("Livros cadastrados:\n");
+    for (int i = 0; i <= p->topo; i++) {
+        printf("'%s' de %s, %d páginas\n", p->livros[i].nome, p->livros[i].autor, p->livros[i].paginas);
+    }
+}
+
+// Função principal
+int main() {
+    Pilha pilha;
+    inicializaPilha(&pilha);
+
+    int opcao;
+    char nome[MAX_NOME], autor[MAX_NOME];
+    int paginas;
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Inserir livro\n");
+        printf("2. Buscar livro\n");
+        printf("3. Remover livro\n");
+        printf("4. Listar livros\n");
+        printf("5. Sair\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+        getchar(); // Limpa o buffer do teclado
+
+        switch (opcao) {
+            case 1:
+                printf("Digite o nome do livro: ");
+                fgets(nome, MAX_NOME, stdin);
+                nome[strcspn(nome, "\n")] = 0; // Remove a nova linha
+                printf("Digite o nome do autor: ");
+                fgets(autor, MAX_NOME, stdin);
+                autor[strcspn(autor, "\n")] = 0; // Remove a nova linha
+                printf("Digite a quantidade de páginas: ");
+                scanf("%d", &paginas);
+                empilhar(&pilha, nome, autor, paginas);
+                break;
+            case 2:
+                printf("Digite o nome do livro ou autor para buscar: ");
+                fgets(nome, MAX_NOME, stdin);
+                nome[strcspn(nome, "\n")] = 0; // Remove a nova linha
+                buscarLivro(&pilha, nome);
+                break;
+            case 3:
+                if (!pilhaVazia(&pilha)) {
+                    Livro livroRemovido = desempilhar(&pilha);
+                    printf("Livro '%s' removido com sucesso!\n", livroRemovido.nome);
+                } else {
+                    printf("Não há livros para remover.\n");
+                }
+                break;
+            case 4:
+                listarLivros(&pilha); // Chama a função para listar livros
+                break;
+            case 5:
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("Opção inválida! Tente novamente.\n");
+        }
+    } while (opcao != 5);
+}
